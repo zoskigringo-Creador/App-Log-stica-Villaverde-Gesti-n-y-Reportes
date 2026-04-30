@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Villaverde - Logística</title>
+    <!-- Tailwind CSS para el diseño visual y botones grandes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Phosphor Icons para iconos profesionales y limpios -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <style>
+        /* Reglas OBLIGATORIAS para evitar recargas accidentales en celulares */
+        html, body {
+            overscroll-behavior-y: none; /* Bloquea el tirar para recargar (pull-to-refresh) */
+            touch-action: pan-y; /* Permite scroll vertical pero bloquea gestos extraños */
+            user-select: none; /* Evita que el texto se seleccione al tocar muchas veces */
+            -webkit-user-select: none;
+            background-color: #f3f4f6;
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden; /* Controlado mediante JS */
+        }
+
+        /* Ocultar barra de scroll para que se vea como una app real */
+        ::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* Animaciones base */
+        .fade-out {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.8s ease-out;
+        }
+        
+        .tab-btn.active {
+            background-color: #2563eb; /* bg-blue-600 */
+            color: white;
+        }
+
+        /* Estilo para contenedor principal scrolleable */
+        .scroll-container {
+            height: calc(100vh - 100px); /* Restar altura del header */
+            overflow-y: auto;
+            overscroll-behavior-y: none; /* Prevenir rebote dentro del scroll */
+            padding-bottom: 40px;
+        }
+    </style>
+</head>
+<body class="text-gray-800 antialiased font-sans flex flex-col h-screen overflow-hidden">
+
+    <!-- ========================================== -->
+    <!-- PANTALLA DE BIENVENIDA                     -->
+    <!-- ========================================== -->
+    <div id="view-welcome" class="fixed inset-0 bg-slate-900 flex flex-col items-center justify-center text-white z-50 transition-opacity duration-1000" onclick="hideWelcome()">
+        <!-- Icono de Casco Amarillo Gigante usando SVG directo -->
+        <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" fill="#eab308" viewBox="0 0 256 256" class="mb-8">
+            <path d="M224,192H32a8,8,0,0,1,0-16h8V120a88,88,0,0,1,176,0v56h8a8,8,0,0,1,0,16Zm-24-16v-56a72,72,0,0,0-144,0v56Zm-72-88a40,40,0,0,0-40,40,8,8,0,0,0,16,0,24,24,0,0,1,24-24,8,8,0,0,0,0-16Z"></path>
+        </svg>
+        <h1 class="text-6xl font-black mb-2 text-center tracking-wider text-yellow-500">VILLAVERDE</h1>
+        <h2 class="text-4xl font-light text-center text-gray-300 tracking-widest">LOGÍSTICA</h2>
+        
+        <p class="mt-20 text-xl text-gray-500 animate-pulse">Tocar la pantalla para entrar</p>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- CABECERA GLOBAL (Oculta en Menú Principal) -->
+    <!-- ========================================== -->
+    <div id="app-header" class="hidden bg-slate-800 text-white p-4 shadow-lg flex items-center justify-between shrink-0 h-[100px]">
+        <button onclick="showView('view-dashboard')" class="flex items-center gap-2 bg-slate-700 px-6 py-4 rounded-xl active:bg-slate-600 transition-colors">
+            <i class="ph ph-arrow-left text-4xl"></i>
+            <span class="text-3xl font-bold">Volver</span>
+        </button>
+        <h2 id="header-title" class="text-4xl font-bold mr-4 text-yellow-500">Sección</h2>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- MENÚ PRINCIPAL (Los 4 Cuadros Grandes)     -->
+    <!-- ========================================== -->
+    <div id="view-dashboard" class="view-section flex-1 bg-gray-100 flex flex-col h-full hidden">
+        <div class="bg-slate-800 text-white p-8 shadow-md flex items-center justify-center shrink-0">
+            <h1 class="text-5xl font-black text-yellow-500 tracking-wide">MENÚ PRINCIPAL</h1>
+        </div>
+        
+        <div class="flex-1 grid grid-cols-2 gap-6 p-6">
+            <!-- Botón 1: Personal -->
+            <button onclick="showView('view-personal')" class="bg-blue-600 rounded-3xl shadow-2xl flex flex-col items-center justify-center p-6 active:scale-95 transition-transform">
+                <i class="ph-fill ph-users-three text-[100px] text-white mb-6"></i>
+                <span class="text-4xl font-bold text-white uppercase">Personal</span>
+                <span class="text-xl text-blue-200 mt-2">Lista Diaria</span>
+            </button>
+            
+            <!-- Botón 2: Extras -->
+            <button onclick="showView('view-extras')" class="bg-orange-500 rounded-3xl shadow-2xl flex flex-col items-center justify-center p-6 active:scale-95 transition-transform">
+                <i class="ph-fill ph-user-plus text-[100px] text-white mb-6"></i>
+                <span class="text-4xl font-bold text-white uppercase">Extras</span>
+                <span class="text-xl text-orange-200 mt-2">Eventuales</span>
+            </button>
+            
+            <!-- Botón 3: Reportes -->
+            <button onclick="showView('view-reportes')" class="bg-purple-600 rounded-3xl shadow-2xl flex flex-col items-center justify-center p-6 active:scale-95 transition-transform">
+                <i class="ph-fill ph-chart-bar text-[100px] text-white mb-6"></i>
+                <span class="text-4xl font-bold text-white uppercase">Reportes</span>
+                <span class="text-xl text-purple-200 mt-2">Ver Asistencias</span>
+            </button>
+            
+            <!-- Botón 4: Gestión de Personal -->
+            <button onclick="showView('view-gestion')" class="bg-teal-600 rounded-3xl shadow-2xl flex flex-col items-center justify-center p-6 active:scale-95 transition-transform">
+                <i class="ph-fill ph-user-gear text-[100px] text-white mb-6"></i>
+                <span class="text-4xl font-bold text-white uppercase text-center leading-tight">Gestión del<br>Personal</span>
+            </button>
+        </div>
+    </div>
+
+
+    <!-- ========================================== -->
+    <!-- VISTA 1: PERSONAL (Asistencia Diaria)      -->
+    <!-- ========================================== -->
+    <div id="view-personal" class="view-section hidden flex-1 bg-gray-100 flex flex-col">
+        <div class="p-4 bg-white shadow-md z-10 shrink-0">
+            <div class="flex items-center justify-between bg-gray-100 p-4 rounded-2xl border-4 border-gray-200">
+                <label class="text-3xl font-bold text-gray-700">Fecha:</label>
+                <input type="date" id="personal-date" class="text-3xl font-bold bg-white p-4 rounded-xl w-2/3 border-4 border-blue-300 text-center" onchange="renderPersonalList()">
+            </div>
+        </div>
+        
+        <div id="personal-list" class="scroll-container p-4 flex flex-col gap-4">
+            <!-- Los empleados se generan por JavaScript aquí -->
+        </div>
+    </div>
+
+
+    <!-- ========================================== -->
+    <!-- VISTA 2: EXTRAS (Asistencia Eventuales)    -->
+    <!-- ========================================== -->
+    <div id="view-extras" class="view-section hidden flex-1 bg-gray-100 flex flex-col">
+        <div class="p-4 bg-white shadow-md z-10 shrink-0 flex flex-col gap-4">
+            <h3 class="text-2xl font-bold text-center text-gray-500">Seleccionar Rango de Fechas</h3>
+            <div class="flex items-center justify-between bg-gray-100 p-4 rounded-2xl border-4 border-gray-200">
+                <label class="text-3xl font-bold text-gray-700">Desde:</label>
+                <input type="date" id="extras-start-date" class="text-3xl font-bold bg-white p-4 rounded-xl border-4 border-orange-300">
+            </div>
+            <div class="flex items-center justify-between bg-gray-100 p-4 rounded-2xl border-4 border-gray-200">
+                <label class="text-3xl font-bold text-gray-700">Hasta:</label>
+                <input type="date" id="extras-end-date" class="text-3xl font-bold bg-white p-4 rounded-xl border-4 border-orange-300">
+            </div>
+            <button onclick="renderExtrasList()" class="bg-orange-500 text-white text-4xl py-6 rounded-2xl font-black shadow-lg active:scale-95 transition-transform uppercase">
+                Cargar Días
+            </button>
+        </div>
+        
+        <div id="extras-list" class="scroll-container p-4 flex flex-col gap-6">
+            <!-- Los días y empleados eventuales se generan aquí -->
+            <p class="text-center text-2xl text-gray-500 mt-10">Seleccione el rango y presione "Cargar Días"</p>
+        </div>
+    </div>
+
+
+    <!-- ========================================== -->
+    <!-- VISTA 3: REPORTES                          -->
+    <!-- ========================================== -->
+    <div id="view-reportes" class="view-section hidden flex-1 bg-gray-100 flex flex-col">
+        <div class="p-4 bg-white shadow-md z-10 shrink-0">
+            <div class="flex items-center justify-between bg-gray-100 p-4 rounded-2xl border-4 border-gray-200">
+                <label class="text-3xl font-bold text-gray-700">Ver Día:</label>
+                <input type="date" id="report-date" class="text-3xl font-bold bg-white p-4 rounded-xl w-2/3 border-4 border-purple-300 text-center" onchange="renderReport()">
+            </div>
+        </div>
+        
+        <div id="report-content" class="scroll-container p-6 flex flex-col gap-6">
+            <!-- Contenido del reporte generado por JS -->
+        </div>
+    </div>
+
+
+    <!-- ========================================== -->
+    <!-- VISTA 4: GESTIÓN DE PERSONAL               -->
+    <!-- ========================================== -->
+    <div id="view-gestion" class="view-section hidden flex-1 bg-gray-100 flex flex-col">
+        <div class="p-4 bg-white shadow-md z-10 shrink-0">
+            <button onclick="openEmployeeModal()" class="w-full bg-teal-600 text-white text-4xl py-6 rounded-2xl font-black shadow-lg active:scale-95 transition-transform flex items-center justify-center gap-4">
+                <i class="ph-bold ph-plus-circle text-5xl"></i>
+                AÑADIR NUEVO PERSONAL
+            </button>
+        </div>
+        
+        <div id="gestion-list" class="scroll-container p-4 flex flex-col gap-4">
+            <!-- Lista de personal generado por JS -->
+        </div>
+    </div>
+
+
+    <!-- ========================================== -->
+    <!-- MODAL: AÑADIR / EDITAR EMPLEADO            -->
+    <!-- ========================================== -->
+    <div id="modal-employee" class="hidden fixed inset-0 bg-slate-900/90 z-[100] flex flex-col items-center justify-end sm:justify-center p-2 sm:p-4">
+        <div class="bg-white w-full max-w-2xl rounded-[40px] p-8 flex flex-col gap-8 shadow-2xl overflow-y-auto max-h-[90vh]">
+            <h2 id="modal-title" class="text-5xl font-black text-center text-teal-700">Nuevo Personal</h2>
+            
+            <input type="hidden" id="emp-id">
+            
+            <!-- Nombres -->
+            <div class="flex flex-col gap-3">
+                <label class="text-3xl font-bold text-gray-700">Nombres completos</label>
+                <input type="text" id="emp-nombre" class="text-4xl p-6 border-4 border-gray-300 rounded-2xl focus:border-teal-500 outline-none placeholder-gray-400" placeholder="Ej: Juan">
+            </div>
+            
+            <!-- Apellidos -->
+            <div class="flex flex-col gap-3">
+                <label class="text-3xl font-bold text-gray-700">Apellidos completos</label>
+                <input type="text" id="emp-apellido" class="text-4xl p-6 border-4 border-gray-300 rounded-2xl focus:border-teal-500 outline-none placeholder-gray-400" placeholder="Ej: Perez">
+            </div>
+            
+            <!-- Montacargista (Toggle Gigante) -->
+            <div class="flex items-center justify-between bg-slate-100 p-6 rounded-2xl border-4 border-slate-200 active:bg-slate-200 transition-colors" onclick="toggleMontacargaModal()">
+                <div class="flex items-center gap-4">
+                    <i class="ph-fill ph-forklift text-5xl text-yellow-600"></i>
+                    <span class="text-3xl font-bold text-gray-700">¿Es Montacargista?</span>
+                </div>
+                <!-- Toggle UI -->
+                <div id="ui-toggle-montacarga" class="w-24 h-12 bg-gray-400 rounded-full relative transition-colors duration-300">
+                    <div id="ui-toggle-knob" class="w-10 h-10 bg-white rounded-full absolute top-1 left-1 transition-transform duration-300 shadow-md"></div>
+                </div>
+                <input type="checkbox" id="emp-montacarga" class="hidden">
+            </div>
+            
+            <!-- Tipo de Contrato (Botones Gigantes) -->
+            <div class="flex flex-col gap-4 mt-2">
+                <label class="text-3xl font-bold text-gray-700">Tipo de Contrato</label>
+                <div class="flex flex-col gap-4">
+                    <button id="btn-planta" onclick="selectContractType('planta')" class="w-full py-8 text-3xl font-bold rounded-2xl border-4 border-gray-300 text-gray-500 bg-gray-50 transition-all flex items-center justify-center gap-3">
+                        <i class="ph-fill ph-briefcase"></i> Personal de Planta
+                    </button>
+                    <button id="btn-eventual" onclick="selectContractType('eventual')" class="w-full py-8 text-3xl font-bold rounded-2xl border-4 border-gray-300 text-gray-500 bg-gray-50 transition-all flex items-center justify-center gap-3">
+                        <i class="ph-fill ph-user-plus"></i> Personal Eventual (Extra)
+                    </button>
+                </div>
+                <input type="hidden" id="emp-contrato" value="planta">
+            </div>
+            
+            <!-- Acciones -->
+            <div class="flex gap-4 mt-4">
+                <button onclick="closeEmployeeModal()" class="flex-1 py-8 text-3xl font-bold rounded-2xl bg-red-100 text-red-600 border-4 border-red-200 active:bg-red-200">
+                    Cancelar
+                </button>
+                <button onclick="saveEmployee()" class="flex-1 py-8 text-3xl font-bold rounded-2xl bg-teal-600 text-white shadow-lg active:bg-teal-700">
+                    Guardar
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ========================================== -->
+    <!-- LOGICA DE LA APLICACIÓN (JavaScript)       -->
+    <!-- ========================================== -->
+    <script>
+        // 1. ESTADO DE LA APLICACIÓN (In-Memory por defecto)
+        // Se preserva durante la sesión mientras no se cierre la pestaña.
+        const state = {
+            employees: [
+                // Ejemplo de estructura: { id: "1", nombre: "Juan", apellido: "Perez", montacarga: true, contrato: "planta" }
+            ],
+            attendance: {
+                // Estructura: "YYYY-MM-DD": { "empId": "presente" | "ausente" }
+            }
+        };
+
+        // Prevención de pérdida de datos por cierre accidental
+        window.addEventListener('beforeunload', function (e) {
+            e.preventDefault();
+            e.returnValue = '¿Estás seguro que quieres salir? Se podrían perder los datos no guardados si no usamos la nube.';
+        });
+
+        // 2. UTILIDADES DE FECHA
+        function getTodayString() {
+            const today = new Date();
+            // Ajustar zona horaria local
+            today.setMinutes(today.getMinutes() - today.getTimezoneOffset());
+            return today.toISOString().split('T')[0];
+        }
+
+        function formatDateDisplay(dateString) {
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            // Forzar zona para evitar saltos de día
+            const date = new Date(dateString + "T12:00:00"); 
+            let formatted = date.toLocaleDateString('es-ES', options);
+            return formatted.charAt(0).toUpperCase() + formatted.slice(1);
+        }
+
+        // 3. CONTROL DE NAVEGACIÓN Y VISTAS
+        function hideWelcome() {
+            const welcome = document.getElementById('view-welcome');
+            welcome.classList.add('fade-out');
+            setTimeout(() => {
+                welcome.classList.add('hidden');
+                showView('view-dashboard');
+            }, 800);
+        }
+
+        // Autocerrar bienvenida tras 2.5s
+        setTimeout(() => {
+            if(!document.getElementById('view-welcome').classList.contains('hidden')){
+                hideWelcome();
+            }
+        }, 2500);
+
+        function showView(viewId) {
+            // Ocultar todas
+            document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
+            
+            // Mostrar solicitada
+            document.getElementById(viewId).classList.remove('hidden');
+            
+            // Control del Header
+            const header = document.getElementById('app-header');
+            const headerTitle = document.getElementById('header-title');
+            
+            if(viewId === 'view-dashboard') {
+                header.classList.add('hidden');
+            } else {
+                header.classList.remove('hidden');
+                
+                // Setear Títulos
+                if(viewId === 'view-personal') headerTitle.innerText = "Control Personal";
+                if(viewId === 'view-extras') headerTitle.innerText = "Control Extras";
+                if(viewId === 'view-reportes') headerTitle.innerText = "Reporte Diario";
+                if(viewId === 'view-gestion') headerTitle.innerText = "Gestión Personal";
+            }
+
+            // Disparar renderizados específicos
+            if(viewId === 'view-gestion') renderGestionList();
+            if(viewId === 'view-personal') {
+                document.getElementById('personal-date').value = getTodayString();
+                renderPersonalList();
+            }
+            if(viewId === 'view-extras') {
+                // Setear rango por defecto (ej: inicio semana a hoy)
+                const hoy = new Date();
+                const inicioSemana = new Date(hoy);
+                inicioSemana.setDate(hoy.getDate() - hoy.getDay() + (hoy.getDay() === 0 ? -6 : 1)); // Lunes
+                document.getElementById('extras-start-date').value = inicioSemana.toISOString().split('T')[0];
+                document.getElementById('extras-end-date').value = getTodayString();
+                document.getElementById('extras-list').innerHTML = '<p class="text-center text-2xl text-gray-500 mt-10">Seleccione el rango y presione "Cargar Días"</p>';
+            }
+            if(viewId === 'view-reportes') {
+                document.getElementById('report-date').value = getTodayString();
+                renderReport();
+            }
+        }
+
+
+        // ==========================================
+        // FUNCIONES DE GESTIÓN DE PERSONAL
+        // ==========================================
+        function renderGestionList() {
+            const container = document.getElementById('gestion-list');
+            container.innerHTML = '';
+
+            if (state.employees.length === 0) {
+                container.innerHTML = `<div class="text-center p-10 text-gray-400 text-3xl font-bold bg-white rounded-3xl mt-10 shadow-sm border-4 border-dashed border-gray-200">No hay personal registrado aún.<br>Toque "Añadir Nuevo Personal".</div>`;
+                return;
+            }
+
+            // Ordenar alfabéticamente
+            const sortedEmp = [...state.employees].sort((a,b) => a.nombre.localeCompare(b.nombre));
+
+            sortedEmp.forEach(emp => {
+                const isPlanta = emp.contrato === 'planta';
+                const tagContrato = isPlanta 
+                    ? `<span class="bg-blue-100 text-blue-800 px-4 py-2 rounded-xl text-xl font-bold flex items-center gap-2"><i class="ph-fill ph-briefcase"></i> De Planta</span>`
+                    : `<span class="bg-orange-100 text-orange-800 px-4 py-2 rounded-xl text-xl font-bold flex items-center gap-2"><i class="ph-fill ph-user-plus"></i> Eventual (Extra)</span>`;
+                
+                const tagMontacarga = emp.montacarga 
+                    ? `<span class="bg-yellow-200 text-yellow-900 px-4 py-2 rounded-xl text-xl font-bold flex items-center gap-2"><i class="ph-fill ph-forklift"></i> Montacargista</span>`
+                    : '';
+
+                const div = document.createElement('div');
+                div.className = "bg-white p-6 rounded-3xl shadow-md border-2 border-gray-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4";
+                div.innerHTML = `
+                    <div class="flex flex-col gap-3 w-full">
+                        <div class="text-4xl font-black text-gray-800">${emp.nombre} ${emp.apellido}</div>
+                        <div class="flex flex-wrap gap-2">
+                            ${tagContrato}
+                            ${tagMontacarga}
+                        </div>
+                    </div>
+                    <button onclick="editEmployee('${emp.id}')" class="shrink-0 w-full sm:w-auto bg-gray-200 text-gray-800 px-8 py-5 rounded-2xl text-2xl font-bold active:bg-gray-300 flex items-center justify-center gap-2">
+                        <i class="ph-bold ph-pencil-simple text-3xl"></i> Editar
+                    </button>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function openEmployeeModal() {
+            document.getElementById('modal-title').innerText = "Nuevo Personal";
+            document.getElementById('emp-id').value = "";
+            document.getElementById('emp-nombre').value = "";
+            document.getElementById('emp-apellido').value = "";
+            
+            // Reset toggles
+            document.getElementById('emp-montacarga').checked = false;
+            updateMontacargaUI(false);
+            selectContractType('planta');
+            
+            document.getElementById('modal-employee').classList.remove('hidden');
+        }
+
+        function closeEmployeeModal() {
+            document.getElementById('modal-employee').classList.add('hidden');
+        }
+
+        function editEmployee(id) {
+            const emp = state.employees.find(e => e.id === id);
+            if(!emp) return;
+
+            document.getElementById('modal-title').innerText = "Editar Personal";
+            document.getElementById('emp-id').value = emp.id;
+            document.getElementById('emp-nombre').value = emp.nombre;
+            document.getElementById('emp-apellido').value = emp.apellido;
+            
+            document.getElementById('emp-montacarga').checked = emp.montacarga;
+            updateMontacargaUI(emp.montacarga);
+            selectContractType(emp.contrato);
+
+            document.getElementById('modal-employee').classList.remove('hidden');
+        }
+
+        function saveEmployee() {
+            const idInput = document.getElementById('emp-id').value;
+            const nombre = document.getElementById('emp-nombre').value.trim();
+            const apellido = document.getElementById('emp-apellido').value.trim();
+            const montacarga = document.getElementById('emp-montacarga').checked;
+            const contrato = document.getElementById('emp-contrato').value;
+
+            if (!nombre || !apellido) {
+                alert("Por favor, ingrese el nombre y apellido.");
+                return;
+            }
+
+            if (idInput) {
+                // Actualizar
+                const idx = state.employees.findIndex(e => e.id === idInput);
+                if (idx > -1) {
+                    state.employees[idx] = { id: idInput, nombre, apellido, montacarga, contrato };
+                }
+            } else {
+                // Nuevo
+                const newId = "emp_" + Date.now();
+                state.employees.push({ id: newId, nombre, apellido, montacarga, contrato });
+            }
+
+            closeEmployeeModal();
+            renderGestionList();
+        }
+
+        // Modal UI Helpers
+        function toggleMontacargaModal() {
+            const checkbox = document.getElementById('emp-montacarga');
+            checkbox.checked = !checkbox.checked;
+            updateMontacargaUI(checkbox.checked);
+        }
+
+        function updateMontacargaUI(isChecked) {
+            const bg = document.getElementById('ui-toggle-montacarga');
+            const knob = document.getElementById('ui-toggle-knob');
+            if(isChecked) {
+                bg.classList.remove('bg-gray-400');
+                bg.classList.add('bg-yellow-500');
+                knob.classList.add('translate-x-12');
+            } else {
+                bg.classList.add('bg-gray-400');
+                bg.classList.remove('bg-yellow-500');
+                knob.classList.remove('translate-x-12');
+            }
+        }
+
+        function selectContractType(type) {
+            document.getElementById('emp-contrato').value = type;
+            const btnPlanta = document.getElementById('btn-planta');
+            const btnEventual = document.getElementById('btn-eventual');
+
+            if(type === 'planta') {
+                btnPlanta.className = "w-full py-8 text-3xl font-bold rounded-2xl border-4 border-blue-600 bg-blue-600 text-white shadow-md transition-all flex items-center justify-center gap-3";
+                btnEventual.className = "w-full py-8 text-3xl font-bold rounded-2xl border-4 border-gray-300 text-gray-500 bg-gray-50 transition-all flex items-center justify-center gap-3";
+            } else {
+                btnEventual.className = "w-full py-8 text-3xl font-bold rounded-2xl border-4 border-orange-500 bg-orange-500 text-white shadow-md transition-all flex items-center justify-center gap-3";
+                btnPlanta.className = "w-full py-8 text-3xl font-bold rounded-2xl border-4 border-gray-300 text-gray-500 bg-gray-50 transition-all flex items-center justify-center gap-3";
+            }
+        }
+
+
+        // ==========================================
+        // FUNCIONES DE ASISTENCIA DIARIA (PERSONAL)
+        // ==========================================
+        function initAttendanceDate(date) {
+            if (!state.attendance[date]) {
+                state.attendance[date] = {};
+            }
+            // Por defecto todos presentes
+            state.employees.forEach(emp => {
+                if (!state.attendance[date][emp.id]) {
+                    state.attendance[date][emp.id] = "presente";
+                }
+            });
+        }
+
+        function renderPersonalList() {
+            const date = document.getElementById('personal-date').value;
+            if(!date) return;
+
+            initAttendanceDate(date);
+            const container = document.getElementById('personal-list');
+            container.innerHTML = '';
+
+            if (state.employees.length === 0) {
+                container.innerHTML = `<p class="text-center text-2xl text-gray-500 mt-10">Agregue personal primero en Gestión.</p>`;
+                return;
+            }
+
+            // Ordenar: Primero planta, luego eventuales, alfabético
+            const sortedEmp = [...state.employees].sort((a,b) => {
+                if (a.contrato !== b.contrato) return a.contrato === 'planta' ? -1 : 1;
+                return a.nombre.localeCompare(b.nombre);
+            });
+
+            sortedEmp.forEach(emp => {
+                const status = state.attendance[date][emp.id];
+                const isPresente = status === 'presente';
+                
+                const btnPresClass = isPresente 
+                    ? "flex-1 py-8 text-4xl font-black rounded-2xl bg-green-500 text-white shadow-inner border-4 border-green-600 transition-all" 
+                    : "flex-1 py-8 text-4xl font-bold rounded-2xl bg-gray-100 text-gray-400 border-4 border-gray-200 transition-all";
+                
+                const btnAusClass = !isPresente 
+                    ? "flex-1 py-8 text-4xl font-black rounded-2xl bg-red-600 text-white shadow-inner border-4 border-red-700 transition-all" 
+                    : "flex-1 py-8 text-4xl font-bold rounded-2xl bg-gray-100 text-gray-400 border-4 border-gray-200 transition-all";
+
+                const tagMontacarga = emp.montacarga ? `<i class="ph-fill ph-forklift text-yellow-600 text-4xl" title="Montacargista"></i>` : '';
+                const tipoTexto = emp.contrato === 'planta' ? 'Planta' : 'Extra';
+                const tipoColor = emp.contrato === 'planta' ? 'text-blue-500' : 'text-orange-500';
+
+                const div = document.createElement('div');
+                div.className = "bg-white p-6 rounded-[30px] shadow-lg border-2 border-gray-100 flex flex-col gap-6";
+                div.innerHTML = `
+                    <div class="flex justify-between items-center px-2">
+                        <div class="flex flex-col">
+                            <span class="text-4xl font-black text-gray-800">${emp.nombre} ${emp.apellido}</span>
+                            <span class="text-2xl font-bold ${tipoColor}">${tipoTexto}</span>
+                        </div>
+                        ${tagMontacarga}
+                    </div>
+                    <div class="flex gap-4">
+                        <button onclick="setAttendance('${date}', '${emp.id}', 'presente')" class="${btnPresClass}">PRESENTE</button>
+                        <button onclick="setAttendance('${date}', '${emp.id}', 'ausente')" class="${btnAusClass}">AUSENTE</button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function setAttendance(date, empId, status) {
+            state.attendance[date][empId] = status;
+            
+            // Re-renderizar la vista actual para actualizar botones
+            if (!document.getElementById('view-personal').classList.contains('hidden')) {
+                renderPersonalList();
+            } else if (!document.getElementById('view-extras').classList.contains('hidden')) {
+                renderExtrasList(); // Mantiene el estado en extras también
+            }
+        }
+
+
+        // ==========================================
+        // FUNCIONES DE EXTRAS (Por rango de fecha)
+        // ==========================================
+        function getDatesInRange(startStr, endStr) {
+            const start = new Date(startStr + "T12:00:00");
+            const end = new Date(endStr + "T12:00:00");
+            const dateArray = [];
+            let currentDate = new Date(start);
+            while (currentDate <= end) {
+                dateArray.push(currentDate.toISOString().split('T')[0]);
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+            return dateArray;
+        }
+
+        function renderExtrasList() {
+            const start = document.getElementById('extras-start-date').value;
+            const end = document.getElementById('extras-end-date').value;
+            const container = document.getElementById('extras-list');
+            
+            if(!start || !end) {
+                alert("Por favor seleccione fecha de inicio y fin.");
+                return;
+            }
+            if(new Date(start) > new Date(end)) {
+                alert("La fecha de inicio no puede ser mayor a la fecha de fin.");
+                return;
+            }
+
+            container.innerHTML = '';
+            
+            const extras = state.employees.filter(e => e.contrato === 'eventual');
+            if(extras.length === 0) {
+                container.innerHTML = `<p class="text-center text-2xl text-gray-500 mt-10">No hay Personal Eventual (Extra) registrado en el sistema.</p>`;
+                return;
+            }
+
+            const dates = getDatesInRange(start, end);
+
+            // Crear bloque por cada día
+            dates.forEach(date => {
+                initAttendanceDate(date); // Asegura que existan en el estado y por defecto "presente"
+
+                const divDia = document.createElement('div');
+                divDia.className = "bg-white rounded-[30px] shadow-lg border-4 border-orange-200 overflow-hidden";
+                
+                // Cabecera del Día
+                const cabecera = document.createElement('div');
+                cabecera.className = "bg-orange-100 p-4 border-b-4 border-orange-200";
+                cabecera.innerHTML = `<h3 class="text-3xl font-black text-orange-900 text-center uppercase">${formatDateDisplay(date)}</h3>`;
+                divDia.appendChild(cabecera);
+
+                const listaPersonas = document.createElement('div');
+                listaPersonas.className = "p-4 flex flex-col gap-4 bg-orange-50/30";
+
+                extras.forEach(emp => {
+                    const status = state.attendance[date][emp.id];
+                    const isPresente = status === 'presente';
+                    
+                    const btnPresClass = isPresente 
+                        ? "flex-1 py-6 text-3xl font-black rounded-2xl bg-green-500 text-white border-4 border-green-600" 
+                        : "flex-1 py-6 text-3xl font-bold rounded-2xl bg-white text-gray-400 border-4 border-gray-200";
+                    
+                    const btnAusClass = !isPresente 
+                        ? "flex-1 py-6 text-3xl font-black rounded-2xl bg-red-600 text-white border-4 border-red-700" 
+                        : "flex-1 py-6 text-3xl font-bold rounded-2xl bg-white text-gray-400 border-4 border-gray-200";
+
+                    const item = document.createElement('div');
+                    item.className = "flex flex-col gap-3 bg-white p-4 rounded-2xl border-2 border-gray-100 shadow-sm";
+                    item.innerHTML = `
+                        <div class="text-3xl font-bold text-gray-800 px-2">${emp.nombre} ${emp.apellido}</div>
+                        <div class="flex gap-3">
+                            <button onclick="setAttendance('${date}', '${emp.id}', 'presente')" class="${btnPresClass}">VINO</button>
+                            <button onclick="setAttendance('${date}', '${emp.id}', 'ausente')" class="${btnAusClass}">FALTÓ</button>
+                        </div>
+                    `;
+                    listaPersonas.appendChild(item);
+                });
+
+                divDia.appendChild(listaPersonas);
+                container.appendChild(divDia);
+            });
+        }
+
+
+        // ==========================================
+        // FUNCIONES DE REPORTES
+        // ==========================================
+        function renderReport() {
+            const date = document.getElementById('report-date').value;
+            const container = document.getElementById('report-content');
+            container.innerHTML = '';
+
+            if(!date) return;
+
+            const attOfDay = state.attendance[date];
+            
+            if(!attOfDay || Object.keys(attOfDay).length === 0) {
+                container.innerHTML = `<div class="bg-white p-10 rounded-[30px] shadow text-center text-3xl text-gray-500">No hay registros guardados para este día.</div>`;
+                return;
+            }
+
+            const presentes = [];
+            const ausentes = [];
+
+            state.employees.forEach(emp => {
+                const status = attOfDay[emp.id];
+                if(status === 'presente') presentes.push(emp);
+                if(status === 'ausente') ausentes.push(emp);
+            });
+
+            const total = presentes.length + ausentes.length;
+
+            // Bloque de Resumen General
+            container.innerHTML += `
+                <div class="bg-purple-800 text-white p-8 rounded-[30px] shadow-xl flex flex-col items-center justify-center gap-4">
+                    <h3 class="text-4xl font-black mb-4 capitalize">${formatDateDisplay(date)}</h3>
+                    <div class="flex gap-8 w-full">
+                        <div class="flex-1 bg-green-500/20 border-4 border-green-500 rounded-2xl p-6 text-center">
+                            <span class="block text-6xl font-black text-green-400">${presentes.length}</span>
+                            <span class="text-2xl font-bold mt-2 block">PRESENTES</span>
+                        </div>
+                        <div class="flex-1 bg-red-500/20 border-4 border-red-500 rounded-2xl p-6 text-center">
+                            <span class="block text-6xl font-black text-red-400">${ausentes.length}</span>
+                            <span class="text-2xl font-bold mt-2 block">AUSENTES</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Lista de Ausentes (Rojo) - Se muestra primero por importancia
+            if(ausentes.length > 0) {
+                let htmlAus = `
+                <div class="bg-white border-4 border-red-300 rounded-[30px] overflow-hidden shadow-lg">
+                    <div class="bg-red-100 p-4 border-b-4 border-red-200 text-center">
+                        <h4 class="text-3xl font-black text-red-800">LISTA DE AUSENTES</h4>
+                    </div>
+                    <div class="p-4 flex flex-col gap-2">`;
+                
+                ausentes.forEach(emp => {
+                    const tipo = emp.contrato === 'planta' ? '(Planta)' : '(Extra)';
+                    htmlAus += `<div class="text-3xl font-bold text-gray-700 py-3 border-b-2 border-gray-100 flex items-center gap-2">
+                        <i class="ph-fill ph-x-circle text-red-500 text-4xl"></i>
+                        ${emp.nombre} ${emp.apellido} <span class="text-xl text-gray-400">${tipo}</span>
+                    </div>`;
+                });
+                
+                htmlAus += `</div></div>`;
+                container.innerHTML += htmlAus;
+            }
+
+            // Lista de Presentes (Verde)
+            if(presentes.length > 0) {
+                let htmlPres = `
+                <div class="bg-white border-4 border-green-300 rounded-[30px] overflow-hidden shadow-lg mt-4">
+                    <div class="bg-green-100 p-4 border-b-4 border-green-200 text-center">
+                        <h4 class="text-3xl font-black text-green-800">LISTA DE PRESENTES</h4>
+                    </div>
+                    <div class="p-4 flex flex-col gap-2">`;
+                
+                presentes.forEach(emp => {
+                    const tipo = emp.contrato === 'planta' ? '(Planta)' : '(Extra)';
+                    htmlPres += `<div class="text-3xl font-bold text-gray-700 py-3 border-b-2 border-gray-100 flex items-center gap-2">
+                        <i class="ph-fill ph-check-circle text-green-500 text-4xl"></i>
+                        ${emp.nombre} ${emp.apellido} <span class="text-xl text-gray-400">${tipo}</span>
+                    </div>`;
+                });
+                
+                htmlPres += `</div></div>`;
+                container.innerHTML += htmlPres;
+            }
+        }
+    </script>
+</body>
+</html>
